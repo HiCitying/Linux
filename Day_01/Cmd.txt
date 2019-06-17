@@ -1,0 +1,1 @@
+arm-linux-gcc Main.c ClearScreen.c Show_Bmp.c Play_Music.c Mapping.c DrawPoint.c Open_Led.c Serial.c Show_Word.c Show_Num.c LTPHH.c led.c myutils.c C_play_music.c 
