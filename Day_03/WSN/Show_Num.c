@@ -1,0 +1,86 @@
+#include "Show_Word.h"
+#include "Show_Num.h"
+
+unsigned char num[10][16] = {{0x00,0x00,0x00,0x18,0x24,0x42,0x42,0x42,0x42,0x42,0x42,0x42,0x24,0x18,0x00,0x00},
+                             {0x00,0x00,0x00,0x08,0x38,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x3E,0x00,0x00},
+                             {0x00,0x00,0x00,0x3C,0x42,0x42,0x42,0x02,0x04,0x08,0x10,0x20,0x42,0x7E,0x00,0x00},
+                             {0x00,0x00,0x00,0x3C,0x42,0x42,0x02,0x04,0x18,0x04,0x02,0x42,0x42,0x3C,0x00,0x00},
+                             {0x00,0x00,0x00,0x04,0x0C,0x0C,0x14,0x24,0x24,0x44,0x7F,0x04,0x04,0x1F,0x00,0x00},
+                             {0x00,0x00,0x00,0x7E,0x40,0x40,0x40,0x78,0x44,0x02,0x02,0x42,0x44,0x38,0x00,0x00},
+                             {0x00,0x00,0x00,0x18,0x24,0x40,0x40,0x5C,0x62,0x42,0x42,0x42,0x22,0x1C,0x00,0x00},
+                             {0x00,0x00,0x00,0x7E,0x42,0x04,0x04,0x08,0x08,0x10,0x10,0x10,0x10,0x10,0x00,0x00},
+                             {0x00,0x00,0x00,0x3C,0x42,0x42,0x42,0x24,0x18,0x24,0x42,0x42,0x42,0x3C,0x00,0x00},
+                             {0x00,0x00,0x00,0x38,0x44,0x42,0x42,0x42,0x46,0x3A,0x02,0x02,0x24,0x18,0x00,0x00}};
+
+void Show_Num(int num1,int *py,int x,int y,int color)
+{
+    int i=WNum(num1);
+
+    switch (i)
+    {
+        case 1:
+        {
+            Show_Word(num[num1],py,x,y,8,sizeof(num[num1]),color);
+            break;
+        }
+        case 2:
+        {
+            //显示十位
+            Show_Word(num[num1/10],py,x,y,8,sizeof(num[num1/10]),color);
+            Show_Word(num[num1%10],py,x+10,y,8,sizeof(num[num1%10]),color);
+            break;
+        }
+        case 3:
+        {
+            //显示百位
+            Show_Word(num[num1/100],py,x,y,8,sizeof(num[num1/100]),color);
+            //显示十位
+            Show_Word(num[num1%100/10],py,x+10,y,8,sizeof(num[num1%100/10]),color);
+            //显示个位
+            Show_Word(num[num1%10],py,x+20,y,8,sizeof(num[num1%10]),color);
+            break;
+
+        }
+        case 4:
+        {
+            //显示千位
+            Show_Word(num[num1/1000],py,x,y,8,sizeof(num[num1/1000]),color);
+            //显示百位
+            Show_Word(num[num1/100%10],py,x+10,y,8,sizeof(num[num1/100%10]),color);
+            //显示十位
+            Show_Word(num[num1%100/10],py,x+20,y,8,sizeof(num[num1%100/10]),color);
+            //显示个位
+            Show_Word(num[num1%10],py,x+30,y,8,sizeof(num[num1%10]),color);
+
+            break;
+        }
+        case 5:
+        {
+            //显示万位
+            Show_Word(num[num1/10000],py,x,y,8,sizeof(num[num1/10000]),color);
+            //显示千位
+            Show_Word(num[num1/1000%10],py,x+10,y,8,sizeof(num[num1/1000%10]),color);
+            //显示百位
+            Show_Word(num[num1%1000/100],py,x+20,y,8,sizeof(num[num1%1000/100]),color);
+            //显示十位
+            Show_Word(num[num1%100/10],py,x+30,y,8,sizeof(num[num1%100/10]),color);
+            //显示个位
+            Show_Word(num[num1%10],py,x+40,y,8,sizeof(num[num1%10]),color);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+int WNum(int x)
+{
+    int y=0;
+    while (x)
+    {
+        y+=1;
+        x/=10;
+    }
+    return y;
+
+}

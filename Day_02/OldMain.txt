@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <errno.h>
+#include <linux/input.h>
+#include <signal.h>
+#include <math.h>
+#include "DrawPoint.h"
+#include "ClearScreen.h"
+#include "Play_Music.h"
+#include "Show_Bmp.h"
+#include "Open_Led.h"
+#include "Show_Num.h"
+#include "Show_Word.h"
+#include "LTPHH.h"
+#include "TouchScreen.h"
+
+void main(void)
+{
+
+
+
+
+    int function=-1;
+    char *picture[3]={"plh_1.bmp","Hong.bmp","Bu.bmp"};
+    int i=0;//picture下标
+    ///////////////////////////////////
+
+
+
+    int *p=(int *)Mapping("/dev/fb0",800,480);
+
+
+    struct input_event event;
+
+
+    int x,y;
+    int touch_fd = open("/dev/input/event0",O_RDWR);
+    if(touch_fd < 0)
+    {
+        perror("open touch_fd error\n");
+    }
+    int ret;
+
+
+    //起始坐标点
+    int x0,y0;
+    //结束坐标点
+    int x1,y1;
+
+    while(1)
+    {
+
+        //读取触摸屏事件
+        ret = read(touch_fd,&event,sizeof(event));
+        if(ret < sizeof(event))
+        {
+            continue;
+        }
+        //printf("ev.type = %d , ev.code = %d, ev.value = %d\n",event.type,event.code,event.value);
+
+
+            //认为是一个X事件
+        if(event.type == EV_ABS && event.code == ABS_X)
+        {
+            x = event.value;
+        }
+            //认为是一个Y事件
+        else if(event.type == EV_ABS && event.code == ABS_Y)
+        {
+            y = event.value;
+        }
+            //认为按下去了
+        else if(event.type == EV_KEY && event.code == BTN_TOUCH && event.value != 0 )
+        {
+            x0=x;
+            y0=y;
+        }
+            //认为此时弹起来了
+        else if(event.type == EV_KEY && event.code == BTN_TOUCH && event.value == 0)
+        {
+            x1=x;
+            y1=y;
+
+
+
+            //左右滑动
+            if(abs(x1-x0)-abs(y1-y0)>0)
+            {
+                if((x1-x0)>0&&abs(x1-x0)>30)
+                {
+                    //向右滑动
+                    i=(i+1)%3;
+                    printf("yyyyyyyyyyyyyyy %d\n",i);
+                    Show_Bmp(picture[i],p,800,480,0,0);
+                }else if((x1-x0)<0&&abs(x1-x0)>30)
+                {
+                    //向左滑动
+                    if(i==0)
+                    {
+                     i=2;
+                    } else{
+                        i=i-1;
+                    }
+                    printf("zzzzzzzzzzzzzzz %d\n",i);
+                    Show_Bmp(picture[i],p,800,480,0,0);
+                }
+            } else if(abs(x1-x0)-abs(y1-y0)<0)
+            {
+                if((y1-y0)<0&&abs(y1-y0)>20)
+                {
+                    //向上滑动
+                } else if((y1-y0)<0&&abs(y1-y0)>20)
+                {
+                    //向下滑动
+                }
+
+            }
+        }
+
+    }
+
+
+}
