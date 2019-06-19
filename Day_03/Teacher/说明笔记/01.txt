@@ -1,0 +1,78 @@
+v4l2  --是Linux内核中关于视频设备的内核驱动框架，为上层访问底层的视频设备提供了统一的接口。
+/dev/videoX
+/usr/include/linux/videodev2.h 
+
+https://blog.csdn.net/u011425939/article/details/53671869//结构体详解网址
+
+1.打开设备文件
+	fd=open("/dev/video7"，O_RDWR);
+	/dev/video3：视频设备文件名
+	O_RDWR：可读可写
+	fd: open成功反返回文件描述符
+	
+2.查询设备支持哪种格式
+    struct v4l2_fmtdesc fmt; //查询设备格式所用结构体
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fmt.index = 0;
+    int ret;
+//通过ioctl(文件描述符，命令，补充参数（依赖于命令）)函数发送命令，成功返回0//类似于write
+    ret = ioctl(fd,VIDIOC_ENUM_FMT,&fmt);
+    printf("format:%s\n",fmt.description);//成功可显示视频所支持的格式
+3.设置视频格式
+    struct v4l2_format s_fmt;
+    s_fmt.fmt.pix.width = 640;//16的倍数
+    s_fmt.fmt.pix.height = 480;//16的倍数
+    s_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;//是一个像素点由2个字节
+    s_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    ret = ioctl(fd,VIDIOC_S_FMT,&s_fmt);
+
+4.申请内核态缓冲
+	struct v4l2_requestbuffers reqbuf;
+    //memset(&reqbuf,0,sizeof(reqbuf));
+    reqbuf.count = 1;
+    reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    reqbuf.memory = V4L2_MEMORY_MMAP;
+
+    ret = ioctl(fd,VIDIOC_REQBUFS,&reqbuf);
+    
+5.查询内核缓冲
+	struct v4l2_buffer buf;
+    //memset(&buf,0,sizeof(buf));
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    buf.index = 0;
+    ret = ioctl(fd,VIDIOC_QUERYBUF,&buf);
+
+6.把内核空间分配好的缓冲映射到用户空间
+	ub.len = buf.length;
+    ub.start = mmap(NULL,buf.length,
+                    PROT_READ|PROT_WRITE,
+                    MAP_SHARED,
+                    fd,buf.m.offset);
+    if(ub.start == MAP_FAILED)
+    {
+        perror("mmap");
+        return -1;
+    }
+
+7.添加到采集队列
+	ret = ioctl(fd,VIDIOC_QBUF,&buf);
+	
+8.启动视频采集
+	enum v4l2_buf_type   type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    ioctl(fd,VIDIOC_STREAMON,&type);
+	
+
+9.从队列中取出缓冲
+	ioctl(fd,VIDIOC_DQBUF,&buf);
+10.处理图像
+	process_image(ub.start,ub.len);
+11.停止/再次采集
+	ioctl(fd,VIDIOC_STREAMOFF,&type);/ioctl(fd,VIDIOC_QBUF,&buf);
+	
+12.资源回收
+	munmap(ub.start,ub.len);
+	close(fd);
+
+

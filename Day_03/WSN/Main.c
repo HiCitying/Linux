@@ -60,8 +60,10 @@ void main(void)
 
     while (1)
     {
+
+        printf("%d %d %d %d %d\n",sdata.L,sdata.T,sdata.P,sdata.H1,sdata.H2);
         printf("ssssssssss\n");
-        TS=TouchScreen();
+        //TS=TouchScreen();
 
         switch (TS)
         {
@@ -97,7 +99,7 @@ void main(void)
         }
 
 
-
+    sleep(1)
 
     }
     pthread_cancel(sensor);
